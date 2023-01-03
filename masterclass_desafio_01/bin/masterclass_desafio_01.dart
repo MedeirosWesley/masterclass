@@ -5,33 +5,43 @@ void main(List<String> arguments) {
   run();
 }
 
+int index = 0;
+String stringFinal = '';
+
 void run() async {
   final file = await File('lib/pubspec_masterclass.yaml').readAsLines();
-  String mapString = '{${rec(file, 0, '', 0)}}';
-  print(jsonDecode(mapString.replaceAll(',}', '}')));
+  rec(file, 0);
+  print(stringFinal);
+  // print(mapString.replaceAll(',}', '}'));
 }
 
-String rec(List<String> list, int index, String stringFinal, int count) {
-  for (int i = index; i < list.length; i++) {
-    if (list[i].contains(':')) {
-      var ident = ' '
-          .allMatches(jsonEncode(list[i].substring(0, list[i].indexOf(':'))))
+rec(List<String> list, int count) {
+  while (list.length > index) {
+    if (list[index].contains(':')) {
+      var ident = '  '
+          .allMatches(
+              jsonEncode(list[index].substring(0, list[index].indexOf(':'))))
           .length;
-      if (count > ident) {
-        for (int i = count; i > 0; i -= 2) {
-          stringFinal += '},';
-        }
-      }
-      count = ident;
-      if (list[i].substring(list[i].indexOf(':') + 1).trim().isEmpty) {
+
+      if (list[index].substring(list[index].indexOf(':') + 1).trim().isEmpty) {
         stringFinal +=
-            '${jsonEncode(list[i].substring(0, list[i].indexOf(':')).trim())}:{';
-        // return rec(list, i, stringFinal);
+            '${jsonEncode(list[index].substring(0, list[index].indexOf(':')).trim())}:{';
+        index++;
+        rec(list, ident);
       } else {
         stringFinal +=
-            '${jsonEncode(list[i].substring(0, list[i].indexOf(':')).trim())}: ${jsonEncode(list[i].substring(list[i].indexOf(':') + 1).trim()).replaceAll('\\"', '')},';
+            '${jsonEncode(list[index].substring(0, list[index].indexOf(':')).trim())}: ${jsonEncode(list[index].substring(list[index].indexOf(':') + 1).trim()).replaceAll('\\"', '')},';
+      }
+      if (ident < count) {
+        stringFinal += '}';
+      }
+      count = ident;
+    } else {
+      while (count > 0) {
+        stringFinal += '}';
+        count--;
       }
     }
+    index++;
   }
-  return '$stringFinal},';
 }
